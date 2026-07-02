@@ -1,0 +1,100 @@
+import csv
+import os
+
+FILENAME = "expenses.csv"
+
+def initialize_csv():
+    """Creates the CSV file with headers if it does not exist."""
+    if not os.path.exists(FILENAME):
+        with open(FILENAME, mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Description", "Amount"])
+
+def add_expense():
+    """Takes user input for description and amount, then saves it to the CSV."""
+    description = input("Enter expense description: ").strip()
+    if not description:
+        print("❌ Description cannot be empty.")
+        return
+        
+    try:
+        amount = float(input("Enter expense amount: "))
+        if amount < 0:
+            print("❌ Amount cannot be negative.")
+            return
+    except ValueError:
+        print("❌ Invalid amount. Please enter a valid number.")
+        return
+
+    with open(FILENAME, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow([description, amount])
+    print(f"✅ Successfully added: {description} (${amount:.2f})")
+
+def view_all_expenses():
+    """Reads and displays all saved expenses from the CSV file."""
+    if not os.path.exists(FILENAME) or os.stat(FILENAME).st_size == 0:
+        print("\n📭 No expenses recorded yet.")
+        return
+
+    print("\n" + "="*36)
+    print(f"{'Description':<25} {'Amount':<10}")
+    print("="*36)
+
+    with open(FILENAME, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader) # Skip header
+        
+        count = 0
+        for row in reader:
+            if row:
+                print(f"{row[0]:<25} ${float(row[1]):.2f}")
+                count += 1
+                
+        if count == 0:
+            print("📭 No expenses recorded yet.")
+    print("="*36)
+
+def view_total_spent():
+    """Calculates and displays the sum of all expenses."""
+    if not os.path.exists(FILENAME):
+        print("\n💰 Total Spent: $0.00")
+        return
+
+    total = 0.0
+    with open(FILENAME, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader) # Skip header
+        for row in reader:
+            if row:
+                total += float(row[1])
+                
+    print(f"\n💰 Total Spent: ${total:.2f}")
+
+def main():
+    """Main application loop handling user choice navigation."""
+    initialize_csv()
+    while True:
+        print("\n=========================")
+        print("   EXPENSE TRACKER CLI   ")
+        print("=========================")
+        print("1. Add an Expense")
+        print("2. View All Expenses")
+        print("3. View Total Spent")
+        print("4. Exit")
+        
+        choice = input("Choose an option (1-4): ").strip()
+        if choice == '1':
+            add_expense()
+        elif choice == '2':
+            view_all_expenses()
+        elif choice == '3':
+            view_total_spent()
+        elif choice == '4':
+            print("\n👋 Thank you for using Expense Tracker. Goodbye!")
+            break
+        else:
+            print("❌ Invalid selection. Please choose 1-4.")
+
+if __name__ == "__main__":
+    main()
